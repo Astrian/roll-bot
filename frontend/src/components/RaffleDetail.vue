@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/// <reference path="../../types/RafflePool.d.ts" />
+/// <reference path="../../types/RafflePoolStorage.d.ts" />
+
 import { onMounted, reactive } from 'vue'
 import axios from 'axios'
 
