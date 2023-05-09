@@ -16,7 +16,7 @@ const load = () => {
   const id = localStorage.getItem('current_raffle') ?? '_add'
   console.log(id)
   if (id === '_add') {
-    state.raffleName = '添加新抽奖池'
+    state.raffleName = '切换至已有抽奖池'
     state.currentRaffle = '_add'
   } else {
     const raffle = state.raffleList.find(r => r.raffle_poll_id === id)

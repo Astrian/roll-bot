@@ -16,6 +16,7 @@ if (!localStorage.getItem('raffle_list')) {
 }
 
 onMounted(() => {
+  localStorage.setItem('current_raffle', '_add')
   load()
 })
 
