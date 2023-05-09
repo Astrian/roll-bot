@@ -23,10 +23,10 @@ onMounted(async () => {
   <div class="columns">
     <div class="column">
       <h1 class="title is-1">{{ state.raffle.name }}</h1>
-      <h2 class="subtitle">{{ state.raffle.has_raffled ? '已开奖' : '未开奖'}}</h2>
+      <h2 class="subtitle">{{ state.raffle.has_raffled ? '已开奖' : '未开奖'}}，共有 {{ state.raffle.participants_number }} 人参与抽奖</h2>
       <hr />
       <h2 class="title is-2">奖项</h2>
-      <div v-for="(tier, _) in state.raffle.tiers" :key="tier.id">
+      <div v-for="(tier, _) in state.raffle.tiers" :key="tier.id" class="tier">
         <div class="tier-name">{{ tier.name }}</div>
         <div class="tier-prize">{{ tier.prize }}（{{tier.number}} 位）</div>
         <div v-if="state.raffle.has_raffled">
@@ -46,18 +46,21 @@ onMounted(async () => {
 }
 .column {
   margin-top: 40px;
-  .tier-name {
-    font-weight: 700;
-    font-size: 25px;
-  }
-  .tier-prize {
-    margin-bottom: 20px;
-  }
+  .tier {
+    margin-bottom: 80px;
+    .tier-name {
+      font-weight: 700;
+      font-size: 25px;
+    }
+    .tier-prize {
+      margin-bottom: 20px;
+    }
 
-  .winner_name {
-    flex-direction: row;
-    .winner_username {
-      color: gray;
+    .winner_name {
+      flex-direction: row;
+      .winner_username {
+        color: gray;
+      }
     }
   }
 }

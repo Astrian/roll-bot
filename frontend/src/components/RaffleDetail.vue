@@ -134,7 +134,7 @@ const startRaffle = async () => {
 }
 
 const clipboard = async () => {
-  await navigator.clipboard.writeText(`${state.domain}/raffle_pools/${$props.current}`)
+  await navigator.clipboard.writeText(`${state.domain}/raffles/${$props.current}`)
   alert('已复制到剪贴板。')
 }
 </script>
