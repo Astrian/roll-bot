@@ -54,6 +54,11 @@ const addTier = async () => {
   }
 }
 
+const removeTier = async (id: any) => {
+  await axios.delete(`${import.meta.env.VITE_ENDPOINT_DOMAIN}/raffle_pools/${props.id}/tiers/${id}`)
+  loadRuffle()
+}
+
 </script>
 
 <template>
@@ -70,9 +75,9 @@ const addTier = async () => {
         { title: '数量', dataIndex: 'number', key: 'name' },
         { title: '操作', dataIndex: 'operation' }
       ]" :dataSource="state.ruffleDetailInfo.tiers">
-        <template #bodyCell="{ column }">
+        <template #bodyCell="{ column, _, record }">
           <template v-if="column.dataIndex === 'operation'">
-            <a-popconfirm title="即将删除此奖项">
+            <a-popconfirm title="即将删除此奖项" @confirm="removeTier(record.id)">
               <a>删除</a>
             </a-popconfirm>
           </template>
