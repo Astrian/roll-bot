@@ -107,6 +107,37 @@ app.use(route.post('/raffle_pools/:raffle_pool_id/tiers', async (ctx, rafflePool
   ctx.status = 200
 }))
 
+app.use(route.delete('/raffle_pools/:raffle_pool_id/tiers/:tier_id', async (ctx, rafflePoolId, tierId) => {
+  // Check pool exists
+  const pool = await sqlite.get('SELECT * FROM raffle_pool WHERE id = ?', [rafflePoolId])
+  if (!pool) {
+    ctx.body = { message: 'raffle pool not found' }
+    ctx.status = 404
+    return
+  }
+
+  // Check tier exists
+  const tier = await sqlite.get('SELECT * FROM tier WHERE id = ? AND pool = ?', [tierId, rafflePoolId])
+  if (!tier) {
+    ctx.body = { message: 'tier not found' }
+    ctx.status = 404
+    return
+  }
+
+  // Check if there is any winner in this tier
+  const winners = await sqlite.all('SELECT * FROM winner WHERE tier = ? AND pool = ?', [tierId, rafflePoolId])
+  if (winners.length > 0) {
+    ctx.body = { message: 'there are winners in this tier, you cannot modify it.' }
+    ctx.status = 400
+    return
+  }
+
+  // Delete tier
+  await sqlite.run('DELETE FROM tier WHERE id = ?', [tierId])
+
+  ctx.status = 204
+}))
+
 app.use(route.get('/raffle_pools/:raffle_pool_id', async (ctx, rafflePoolId) => {
   const pool = await sqlite.all('SELECT * FROM raffle_pool WHERE id = ?', [rafflePoolId])
   if (!pool) {
