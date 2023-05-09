@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import RaffleSelector from '../components/RaffleSelector.vue'
 import NewRaffle from '../components/NewRaffle.vue'
+import RaffleDetail from '../components/RaffleDetail.vue'
 import { onMounted, reactive, ref } from 'vue'
 
 const navigator: any = ref()
@@ -39,6 +40,7 @@ const navigate = (id: string) => {
   <RaffleSelector ref="navigator" @navigate="navigate" />
   <hr />
   <NewRaffle @new-raffle="load" v-if="state.current_raffle === '_add'" />
+  <RaffleDetail v-else :current="state.current_raffle"/>
 </div>
 </template>
 
