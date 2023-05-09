@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, defineEmits } from 'vue'
+import { reactive } from 'vue'
 import axios from 'axios'
 
 const $emit = defineEmits(['newRaffle'])

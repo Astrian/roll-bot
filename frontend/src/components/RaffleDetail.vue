@@ -1,7 +1,9 @@
 <script setup lang="ts">
 /// <reference types="../../types/RafflePoolStorage.d.ts" />
-import { defineProps, onMounted, reactive } from 'vue'
+/// <reference types="../../types/Tier.d.ts" />
+import { onMounted, reactive } from 'vue'
 import axios from 'axios'
+import QRCodeVue3 from 'qrcode-vue3'
 
 import Modal from './Modal.vue'
 
@@ -16,7 +18,9 @@ const state = reactive({
   raffle: {} as RafflePool,
   showNewTierModal: false,
   showParticipantModal: false,
+  showLink: false,
   submittingNewTier: false,
+  domain: import.meta.env.VITE_DOMAIN
 })
 
 onMounted(async () => {
@@ -102,13 +106,44 @@ const deleteTier = async (id: string) => {
     alert(e.response.data.message)
   }
 }
+
+const startRaffle = async () => {
+  if (!confirm('一旦完成抽奖，奖池和奖项将无法修改。\n继续？')) return
+
+  // Get passwor from localStorage
+  const list: RafflePoolStorage[] = JSON.parse(localStorage.getItem('raffle_list') || '[]')
+  let password = ""
+  for (let i in list) {
+    if (list[i].raffle_poll_id === $props.current) {
+      password = list[i].password
+      break
+    }
+  }
+
+  try {
+    await axios.post(`${import.meta.env.VITE_ENDPOINT_DOMAIN}/raffle_pools/${$props.current}/winners`, {}, {
+      headers: {
+        'Authorization': `Bearer ${password}`,
+      }
+    })
+    alert('抽奖完成。')
+    load()
+  } catch(e: any) {
+    alert(e.response.data.message)
+  }
+}
+
+const clipboard = async () => {
+  await navigator.clipboard.writeText(`${state.domain}/raffle_pools/${$props.current}`)
+  alert('已复制到剪贴板。')
+}
 </script>
 
 <template>
   <h1 class="title is-4">奖项</h1>
   <div class="field is-grouped">
     <div class="control">
-      <button class="button is-link" @click="state.showNewTierModal = true">添加一个新奖项</button>
+      <button class="button is-link" @click="state.showNewTierModal = true" :disabled="state.raffle.has_raffled">添加一个新奖项</button>
     </div>
   </div>
   <table class="table">
@@ -129,10 +164,30 @@ const deleteTier = async (id: string) => {
       </tr>
     </tbody>
   </table>
+
+  <div v-if="state.raffle.has_raffled">
+    <h1 class="title is-4">中奖名单</h1>
+    <div class="content" id="raffle_winnerlist">
+      <ul>
+        <div v-for="(tier, _) in state.raffle.tiers" :key="tier.id">
+          <li>{{ tier.name }}</li>
+          <ul>
+            <li v-for="(winner, i) in tier.winners" :key="i">{{ winner.display_name }}</li>
+          </ul>
+        </div>
+      </ul>
+      <div class="field is-grouped">
+        <div class="control">
+          <button class="button is-primary" @click="state.showLink = true">分享中奖名单链接</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <h1 class="title is-4">操作</h1>
   <div class="field is-grouped">
-    <div class="control">
-      <button class="button is-primary" @click="">进行抽奖</button>
+    <div class="control" v-if="!state.raffle.has_raffled">
+      <button class="button is-primary" @click="startRaffle">进行抽奖</button>
     </div>
     <div class="control">
       <button class="button" @click="state.showParticipantModal = true">查看参与者列表</button>
@@ -201,11 +256,28 @@ const deleteTier = async (id: string) => {
       <p>共 {{ state.raffle.participants_number }} 人</p>
     </footer>
   </Modal>
+
+  <Modal :show="state.showLink">
+    <header class="modal-card-head">
+      <p class="modal-card-title">中奖名单链接</p>
+      <button class="delete" aria-label="close" @click="state.showLink = false"></button>
+    </header>
+
+    <section class="modal-card-body">
+      <QRCodeVue3 :value="`${state.domain}/raffles/${state.raffle.raffle_poll_id}`" />
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button is-primary" @click="clipboard">复制至剪贴板</button>
+    </footer>
+  </Modal>
 </template>
 
 <style scoped lang="scss">
 .modal-card-foot {
   display: flex;
   justify-content: flex-end;
+}
+#raffle_winnerlist {
+  margin-bottom: 20px;
 }
 </style>
