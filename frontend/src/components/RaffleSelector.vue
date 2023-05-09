@@ -1,30 +1,35 @@
 <script setup lang="ts">
-import { reactive, defineEmits, onMounted } from 'vue'
+import { reactive, defineEmits } from 'vue'
 
-const $props = defineProps(['current'])
 const $emit = defineEmits(['navigate'])
 
 const state = reactive({
   isDropdownActive: false,
   raffleList: [] as RafflePool[],
-  raffleName: ''
-})
-
-onMounted(() => {
-  load()
+  raffleName: '',
+  currentRaffle: ''
 })
 
 const load = () => {
+  console.log('load')
   state.raffleList = JSON.parse(localStorage.getItem('raffle_list') || '[]')
-  if ($props.current === '_add') {
+  const id = localStorage.getItem('current_raffle') ?? '_add'
+  console.log(id)
+  if (id === '_add') {
     state.raffleName = '添加新抽奖池'
+    state.currentRaffle = '_add'
   } else {
-    const raffle = state.raffleList.find(r => r.id === $props.current)
+    const raffle = state.raffleList.find(r => r.raffle_poll_id === id)
     if (raffle) {
+      state.currentRaffle = id
       state.raffleName = raffle.name
     }
   }
 }
+
+defineExpose({
+  load
+})
 
 </script>
 
@@ -40,13 +45,13 @@ const load = () => {
   </div>
   <div class="dropdown-menu" id="dropdown-menu" role="menu">
     <div class="dropdown-content">
-      <a href="#" class="dropdown-item" :class="$props.current === '_add' ? 'is-active' : ''" @click="() => {$emit('navigate', '_add'); state.isDropdownActive = false}">
+      <a href="#" class="dropdown-item" :class="state.currentRaffle === '_add' ? 'is-active' : ''" @click="() => {$emit('navigate', '_add'); state.isDropdownActive = false}">
         添加新抽奖池
       </a>
       <div v-if="state.raffleList.length > 0">
         <hr class="dropdown-divider" />
-        <div v-for="(raffle, _) in state.raffleList" :key="raffle.id">
-          <a href="#" class="dropdown-item" :class="$props.current === raffle.id ? 'is-active' : ''" @click="() => {$emit('navigate', raffle.id); state.isDropdownActive = false}">
+        <div v-for="(raffle, _) in state.raffleList" :key="raffle.raffle_poll_id">
+          <a href="#" class="dropdown-item" :class="state.currentRaffle === raffle.raffle_poll_id ? 'is-active' : ''" @click="() => {$emit('navigate', raffle.raffle_poll_id); state.isDropdownActive = false}">
             {{ raffle.name }}
           </a>
         </div>

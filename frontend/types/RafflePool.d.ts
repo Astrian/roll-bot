@@ -1,7 +1,8 @@
 /// <reference types="./Tier.d.ts" />
+/// <reference types="./Participants.d.ts" />
 
 type RafflePool = {
-  id: string,
+  raffle_poll_id: string,
   participants: Participant[],
   participants_number: number,
   tiers: Tier[],
