@@ -1,6 +1,4 @@
-/// <reference types="./Participants.d.ts" />
-
-type Tier = {
+declare type Tier = {
   id: string,
   name: string,
   number: number,

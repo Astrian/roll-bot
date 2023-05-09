@@ -1,4 +1,4 @@
-type Pool = {
+declare type Pool = {
   id: string,
   desc: string,
   active: boolean

@@ -1,4 +1,4 @@
-type Participant = {
+declare type Participant = {
   id: string
   time: string
   display_name: string
