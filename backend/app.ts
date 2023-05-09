@@ -113,6 +113,17 @@ app.use(route.get('/raffle_pools/:raffle_pool_id', async (ctx, rafflePoolId) => 
   const tiers = await sqlite.all('SELECT * FROM tier WHERE pool = ?', [rafflePoolId])
   const participants = await sqlite.all('SELECT * FROM participant WHERE pool = ?', [rafflePoolId])
 
+  tiers.winners = []
+  for (const tier of tiers) {
+    const winnersId = await sqlite.all('SELECT * FROM winner WHERE tier = ?', [tier.id])
+    const winners = []
+    for (const winnerId of winnersId) {
+      const winner = await sqlite.get('SELECT * FROM participant WHERE id = ?', [winnerId.participant])
+      winners.push(winner)
+    }
+    tier.winners = winners
+  }
+
   ctx.body = {
     id: rafflePoolId,
     tiers,
