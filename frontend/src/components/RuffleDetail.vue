@@ -6,7 +6,7 @@ import axios from 'axios'
 const props = defineProps(['id'])
 
 const state = reactive({
-  ruffleDetailInfo: {} as Pool
+  ruffleDetailInfo: {} as RufflePool
 })
 
 onMounted(async () => {
@@ -31,6 +31,17 @@ onMounted(async () => {
       <span style="margin: 16px">{{ state.ruffleDetailInfo.desc ?? props.id }}</span>
     </a-layout-header>
     <a-layout-content style="margin: 16px">
+      <h2>奖项</h2>
+      <button>新增一个奖项</button>
+      <a-table :columns="[
+        { title: '奖项', dataIndex: 'prize', key: 'prize' }
+      ]" :dataSource="state.ruffleDetailInfo.tiers" />
+      <h2>参与者（{{ state.ruffleDetailInfo.participants_number }}）</h2>
+      <a-table :columns="[
+        { title: '显示名', dataIndex: 'display_name', key: 'username' },
+        { title: '用户名', dataIndex: 'username', key: 'username' },
+        { title: '参与抽奖时间', dataIndex: 'time', key: 'username' }
+      ]" :dataSource="state.ruffleDetailInfo.participants" />
     </a-layout-content>
   </a-layout>
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 /// <reference path="../types/Pool.d.ts" />
+/// <reference path="../types/RufflePool.d.ts" />
 
 import { reactive } from 'vue'
 import { onMounted } from 'vue'
