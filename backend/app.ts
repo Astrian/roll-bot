@@ -12,6 +12,8 @@ import sqlite from './utils/sqlite'
 import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
 import cors from '@koa/cors'
+import bcrypt from 'bcrypt'
+import randomString from './utils/random_string'
 
 dotenv.config()
 const print = debug('rollbot:main')
@@ -55,9 +57,17 @@ app.use(route.post('/raffle_pools', async (ctx) => {
   // slice the first one (title of the spreadsheet)
   rafflePool.shift()
 
+  // Get raffle name
+  const raffleName = ctx.request.body.name
+
+  // generate a password for this raffle pool
+  const password = randomString(32)
+  const salt = await bcrypt.genSalt(10)
+  const hash = await bcrypt.hash(password, salt)
+
   // generate a uuid for this raffle pool
   const rafflePoolId = uuidv4()
-  await sqlite.run('INSERT INTO raffle_pool (id) VALUES (?)', [rafflePoolId])
+  await sqlite.run('INSERT INTO raffle_pool (id, password, name) VALUES (?, ?, ?)', [rafflePoolId, hash, raffleName])
 
   // insert participants into database
   for (const participant of rafflePool) {
@@ -67,7 +77,7 @@ app.use(route.post('/raffle_pools', async (ctx) => {
     await sqlite.run('INSERT INTO participant (id, time, display_name, username, pool) VALUES (?, ?, ?, ?, ?)', [uuidv4(), participant.time, participant.display_name, participant.username, rafflePoolId])
   }
 
-  ctx.body = { raffle_poll_id: rafflePoolId }
+  ctx.body = { raffle_poll_id: rafflePoolId, password }
   ctx.status = 200
 }))
 
