@@ -14,7 +14,6 @@
     "@fortawesome/vue-fontawesome": "^3.0.3",
     "axios": "^1.4.0",
     "bulma": "^0.9.4",
-    "qrcode-vue3": "^1.4.17",
     "sass": "^1.62.1",
     "vue": "^3.2.47",
     "vue-router": "4"
