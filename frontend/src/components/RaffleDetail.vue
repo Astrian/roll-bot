@@ -1,6 +1,6 @@
 <script setup lang="ts">
-/// <reference types="../../types/RafflePoolStorage.d.ts" />
-/// <reference types="../../types/Tier.d.ts" />
+/// <reference types="../../types/rafflepoolstorage.d.ts" />
+/// <reference types="../../types/tier.d.ts" />
 import { onMounted, reactive } from 'vue'
 import axios from 'axios'
 
