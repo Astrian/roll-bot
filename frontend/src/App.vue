@@ -1,57 +1,69 @@
 <script setup lang="ts">
+/// <reference path="../types/Pool.d.ts" />
+
 import { reactive } from 'vue'
+import { onMounted } from 'vue'
+import AddRufflePool from './components/AddRufflePool.vue'
 
 const state = reactive({
-  fileLoaded: false,
-  participants: [] as {
-    time: string
-    display_name: string
-    username: string
-  }[],
-  username_list: [] as string[]
+  poolList: [] as Pool[],
+  activePool: ['-1'],
 })
 
-const loadFile = (event: Event) => {
-  if (event.type !== 'change') return
-
-  const fileForm = (event.target as HTMLFormElement).files[0]
-  
-  // read file
-  const reader = new FileReader()
-  reader.readAsText(fileForm)
-  reader.onload = () => {
-    const csv = reader.result as string
-    // remove all /r
-    csv.replace(/\r/g, '')
-    const lines = csv.split('\n')
-    // remove first line
-    lines.shift()
-    for (const line of lines) {
-      const [time, display_name, username] = line.split(',')
-      const obj = {
-        time,
-        display_name,
-        username: username.replace(/\@/g, '').replace(/\r/g, '')
-      }
-      state.participants.push(obj)
-      state.username_list.push(obj.username)
-    }
-    state.fileLoaded = true
+onMounted(() => {
+  // Check localStorage
+  const raffle_poll_id_string = localStorage.getItem('raffle_poll_id')
+  if (!raffle_poll_id_string) {
+    localStorage.setItem('raffle_poll_id', '[]')
   }
+
+  loadPoolList()
+})
+
+const loadPoolList = async () => {
+  state.poolList = localStorage.getItem('raffle_poll_id') ? JSON.parse(localStorage.getItem('raffle_poll_id') ?? "[]") : []
+}
+
+const newPool = async (id: string) => {
+  loadPoolList()
+  state.activePool = [id]
 }
 
 </script>
 
 <template>
-  <div>
-    <h1>抽奖 Bot</h1>
-    <hr />
-    <h2>Step 1: 加载写有抽奖参与者的 CSV 文件</h2>
-    <form @submit.prevent="loadFile">
-      <input type="file" accept=".csv" @change="loadFile">
-    </form>
-  </div>
+  <a-layout style="min-height: 100vh">
+    <a-layout-sider>
+      <div class="logo">抽奖 Bot</div>
+      <a-menu theme="dark" mode="inline" v-model:selectedKeys="state.activePool">
+        <a-menu-item key="-1">
+          <span>新增抽奖池</span>
+        </a-menu-item>
+
+        <a-sub-menu key="sub1">
+          <template #title>
+            <span>
+              <span>抽奖池</span>
+            </span>
+          </template>
+          <a-menu-item v-for="item in state.poolList" :key="item.id">{{ item.desc }}</a-menu-item>
+        </a-sub-menu>
+      </a-menu>
+    </a-layout-sider>
+    <AddRufflePool v-if="state.activePool[0] === '-1'" @newPool="newPool" />
+    <div v-else>
+      
+    </div>
+  </a-layout>
 </template>
 
 <style scoped lang="scss">
+  .logo {
+    float: left;
+    width: 120px;
+    height: 31px;
+    margin: 16px 24px 16px 24px;
+    font-size: 20px;
+    color: white;
+  }
 </style>
