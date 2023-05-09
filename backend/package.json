@@ -25,9 +25,10 @@
   },
   "scripts": {
     "dev": "DEBUG=rollbot:* nodemon app.ts",
-    "start": "tsc --build && NODE_ENV=production pm2 start dist/app.js --name rollbot",
+    "start": "tsc --build && mkdir -p dist/public/uploads && NODE_ENV=production pm2 start dist/app.js --name rollbot",
     "stop": "pm2 stop rollbot && pm2 delete rollbot",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "logs": "pm2 logs rollbot"
   },
   "devDependencies": {
     "nodemon": "^2.0.22",
