@@ -14,10 +14,15 @@ const $props = defineProps({
 
 const state = reactive({
   raffle: {} as RafflePool,
-  showNewTierModal: false
+  showNewTierModal: false,
+  submittingNewTier: false,
 })
 
 onMounted(async () => {
+  load()
+})
+
+const load = async () => {
   const list: RafflePoolStorage[] = JSON.parse(localStorage.getItem('raffle_list') || '[]')
   for (let i in list) {
     if (list[i].raffle_poll_id === $props.current) {
@@ -33,10 +38,46 @@ onMounted(async () => {
       return
     }
   }
-})
+}
 
-const newTier = (event: Event) => {
-  console.log(event)
+const newTier = async (event: Event) => {
+  event.preventDefault()
+  state.submittingNewTier = true
+
+  // Get passwor from localStorage
+  const list: RafflePoolStorage[] = JSON.parse(localStorage.getItem('raffle_list') || '[]')
+  let password = ""
+  for (let i in list) {
+    if (list[i].raffle_poll_id === $props.current) {
+      password = list[i].password
+      break
+    }
+  }
+  console.log((event.target as HTMLFormElement)?.elements[2].value)
+  try {
+    await axios.post(`${import.meta.env.VITE_ENDPOINT_DOMAIN}/raffle_pools/${$props.current}/tiers`, {
+      name: ((event.target as HTMLFormElement)?.elements[1] as any).value,
+      number: Number(((event.target as HTMLFormElement)?.elements[2] as any).value),
+      prize: ((event.target as HTMLFormElement)?.elements[3] as any).value,
+    }, {
+      headers: {
+        'Authorization': `Bearer ${password}`,
+      }
+    })
+  } catch(e: any){
+    for (let i in e) {
+      console.log(i)
+    }
+    alert(e.response.data.message)
+  }
+
+  // Clear form
+  state.showNewTierModal = false
+  state.submittingNewTier = false
+  if (event.target instanceof HTMLFormElement) {
+    event.target.reset()
+  }
+  load()
 }
 </script>
 
@@ -74,26 +115,26 @@ const newTier = (event: Event) => {
         <div class="field">
           <label class="label" for="form_name">奖项名称</label>
           <div class="control">
-            <input class="input" type="text" placeholder="一等奖" id="form_name" required>
+            <input class="input" type="text" placeholder="一等奖" id="form_name" required :disabled="state.submittingNewTier">
           </div>
         </div>
 
         <div class="field">
           <label class="label" for="form_number">获奖人数量</label>
           <div class="control">
-            <input class="input" type="number" min="1" value="1" id="form_number" required>
+            <input class="input" type="number" min="1" value="1" id="form_number" required :disabled="state.submittingNewTier">
           </div>
         </div>
 
         <div class="field">
           <label class="label" for="form_prize">奖品描述</label>
           <div class="control">
-            <textarea class="textarea" id="form_prize" placeholder="西湖雅座一位" required />
+            <textarea class="textarea" id="form_prize" placeholder="西湖雅座一位" required :disabled="state.submittingNewTier" />
           </div>
         </div>
       </section>
       <footer class="modal-card-foot">
-        <input type="submit" class="button is-success" value="添加" />
+        <input type="submit" class="button is-success" value="添加" :disabled="state.submittingNewTier" />
       </footer>
     </form>
   </Modal>
