@@ -4,6 +4,7 @@
 import { reactive } from 'vue'
 import { onMounted } from 'vue'
 import AddRufflePool from './components/AddRufflePool.vue'
+import RuffleDetail from './components/RuffleDetail.vue'
 
 const state = reactive({
   poolList: [] as Pool[],
@@ -18,6 +19,13 @@ onMounted(() => {
   }
 
   loadPoolList()
+
+  for (let i in state.poolList) {
+    const pool = state.poolList[i]
+    if (pool.active) {
+      state.activePool = [pool.id]
+    }
+  }
 })
 
 const loadPoolList = async () => {
@@ -51,9 +59,7 @@ const newPool = async (id: string) => {
       </a-menu>
     </a-layout-sider>
     <AddRufflePool v-if="state.activePool[0] === '-1'" @newPool="newPool" />
-    <div v-else>
-      
-    </div>
+    <RuffleDetail v-else :id="state.activePool[0]" />
   </a-layout>
 </template>
 
