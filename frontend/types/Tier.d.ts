@@ -3,5 +3,5 @@ type Tier = {
   name: string,
   number: number,
   prize: string,
-  winner?: Participant[]
+  winners?: Participant[]
 }

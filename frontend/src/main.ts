@@ -1,7 +1,14 @@
 import { createApp } from 'vue'
 import './style.scss'
-import App from './App.vue'
-import Antd from 'ant-design-vue'
-import 'ant-design-vue/dist/antd.css'
+import 'bulma'
+import { createRouter, createWebHistory, RouterView } from 'vue-router'
 
-createApp(App).use(Antd).mount('#app')
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    
+    { path: '/raffles/:id', component: () => import('./pages/Raffles.vue')}
+  ]
+})
+
+createApp(RouterView).use(router).mount('#app')
