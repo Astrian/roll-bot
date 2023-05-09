@@ -149,15 +149,35 @@ app.use(route.delete('/raffle_pools/:raffle_pool_id/tiers/:tier_id', async (ctx,
 }))
 
 app.use(route.get('/raffle_pools/:raffle_pool_id', async (ctx, rafflePoolId) => {
-  const pool = await sqlite.all('SELECT * FROM raffle_pool WHERE id = ?', [rafflePoolId])
+  const pool = await sqlite.get('SELECT * FROM raffle_pool WHERE id = ?', [rafflePoolId])
   if (!pool) {
     ctx.body = { message: 'raffle pool not found' }
     ctx.status = 404
     return
   }
+  print(pool)
 
   const tiers = await sqlite.all('SELECT * FROM tier WHERE pool = ?', [rafflePoolId])
   const participants = await sqlite.all('SELECT * FROM participant WHERE pool = ?', [rafflePoolId])
+
+  let adminMode = false
+  if (ctx.headers.authorization) {
+    const authorization = ctx.headers.authorization.split(' ')
+    if (authorization[0] !== 'Bearer') {
+      ctx.body = { message: 'invalid authorization header' }
+      ctx.status = 403
+      return
+    }
+
+    const token = authorization[1]
+    print(token)
+    if (!await bcrypt.compare(token, pool.password)) {
+      ctx.body = { message: 'invalid token' }
+      ctx.status = 403
+      return
+    }
+    adminMode = true
+  }
 
   tiers.winners = []
   for (const tier of tiers) {
@@ -169,12 +189,23 @@ app.use(route.get('/raffle_pools/:raffle_pool_id', async (ctx, rafflePoolId) => 
     }
     tier.winners = winners
   }
-
-  ctx.body = {
-    id: rafflePoolId,
-    tiers,
-    participants,
-    participants_number: participants.length
+  if (adminMode) {
+    ctx.body = {
+      id: rafflePoolId,
+      tiers,
+      participants,
+      participants_number: participants.length,
+      has_raffled: pool.has_raffled === 1 ? true : false,
+      name: pool.name
+    }
+  } else {
+    ctx.body = {
+      id: rafflePoolId,
+      tiers,
+      participants_number: participants.length,
+      has_raffled: pool.has_raffled === 1 ? true : false,
+      name: pool.name
+    }
   }
   ctx.status = 200
 }))
