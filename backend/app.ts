@@ -11,11 +11,16 @@ import fs from 'fs'
 import sqlite from './utils/sqlite'
 import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
+import cors from '@koa/cors'
 
 dotenv.config()
 const print = debug('rollbot:main')
 
 const app = new Koa()
+
+app.use(cors({
+  origin: process.env.FRONTEND_DOMAIN,
+}))
 
 app.use(koaBody({
   multipart: true,
