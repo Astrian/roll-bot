@@ -90,6 +90,28 @@ app.use(route.post('/raffle_pools/:raffle_pool_id/tiers', async (ctx, rafflePool
     return
   }
 
+  // Check password
+  if (!ctx.headers.authorization){
+    ctx.body = { message: 'authorization required' }
+    ctx.status = 403
+    return
+  } else{
+    const authorization = ctx.headers.authorization.split(' ')
+    if (authorization[0] !== 'Bearer') {
+      ctx.body = { message: 'invalid authorization header' }
+      ctx.status = 403
+      return
+    }
+
+    const token = authorization[1]
+    print(token)
+    if (!await bcrypt.compare(token, pool.password)) {
+      ctx.body = { message: 'invalid token' }
+      ctx.status = 403
+      return
+    }
+  }
+
   // Check if body is valid
   if (!ctx.request.body.name || !ctx.request.body.number || !ctx.request.body.prize) {
     ctx.body = { message: 'invalid body' }
@@ -132,6 +154,27 @@ app.use(route.delete('/raffle_pools/:raffle_pool_id/tiers/:tier_id', async (ctx,
     ctx.body = { message: 'tier not found' }
     ctx.status = 404
     return
+  }
+
+  if (!ctx.headers.authorization){
+    ctx.body = { message: 'authorization required' }
+    ctx.status = 403
+    return
+  } else {
+    const authorization = ctx.headers.authorization.split(' ')
+    if (authorization[0] !== 'Bearer') {
+      ctx.body = { message: 'invalid authorization header' }
+      ctx.status = 403
+      return
+    }
+
+    const token = authorization[1]
+    print(token)
+    if (!await bcrypt.compare(token, pool.password)) {
+      ctx.body = { message: 'invalid token' }
+      ctx.status = 403
+      return
+    }
   }
 
   // Check if there is any winner in this tier
@@ -185,6 +228,9 @@ app.use(route.get('/raffle_pools/:raffle_pool_id', async (ctx, rafflePoolId) => 
     const winners = []
     for (const winnerId of winnersId) {
       const winner = await sqlite.get('SELECT * FROM participant WHERE id = ?', [winnerId.participant])
+      if (!adminMode) {
+        winner.username = `${winner.username.charAt(0)}${winner.username.charAt(1)}***${winner.username.charAt(winner.username.length - 2)}${winner.username.charAt(winner.username.length - 1)}`
+      }
       winners.push(winner)
     }
     tier.winners = winners
@@ -216,6 +262,34 @@ app.use(route.post('/raffle_pools/:raffle_pool_id/winners', async (ctx, rafflePo
   if (!pool) {
     ctx.body = { message: 'raffle pool not found' }
     ctx.status = 404
+    return
+  }
+
+  if (!ctx.headers.authorization){
+    ctx.body = { message: 'authorization required' }
+    ctx.status = 403
+    return
+  } else {
+    const authorization = ctx.headers.authorization.split(' ')
+    if (authorization[0] !== 'Bearer') {
+      ctx.body = { message: 'invalid authorization header' }
+      ctx.status = 403
+      return
+    }
+
+    const token = authorization[1]
+    print(token)
+    if (!await bcrypt.compare(token, pool.password)) {
+      ctx.body = { message: 'invalid token' }
+      ctx.status = 403
+      return
+    }
+  }
+
+  // Check if pool has raffled
+  if (pool.has_raffled === 1) {
+    ctx.body = { message: 'this pool has already raffled' }
+    ctx.status = 400
     return
   }
 
@@ -299,6 +373,9 @@ app.use(route.post('/raffle_pools/:raffle_pool_id/winners', async (ctx, rafflePo
       winners.shift()
     }
   }
+
+  // mark raflle pool as raffled
+  await sqlite.run('UPDATE raffle_pool SET has_raffled = 1 WHERE id = ?', [rafflePoolId])
 
   // Constructure response
   let response: WinnersResponse[] = []
