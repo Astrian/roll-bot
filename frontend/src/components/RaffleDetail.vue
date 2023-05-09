@@ -79,6 +79,29 @@ const newTier = async (event: Event) => {
   }
   load()
 }
+
+const deleteTier = async (id: string) => {
+  // Get passwor from localStorage
+  const list: RafflePoolStorage[] = JSON.parse(localStorage.getItem('raffle_list') || '[]')
+  let password = ""
+  for (let i in list) {
+    if (list[i].raffle_poll_id === $props.current) {
+      password = list[i].password
+      break
+    }
+  }
+
+  try {
+    await axios.delete(`${import.meta.env.VITE_ENDPOINT_DOMAIN}/raffle_pools/${$props.current}/tiers/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${password}`,
+      }
+    })
+    load()
+  } catch(e: any) {
+    alert(e.response.data.message)
+  }
+}
 </script>
 
 <template>
@@ -102,7 +125,7 @@ const newTier = async (event: Event) => {
         <th>{{ tier.name }}</th>
         <td>{{ tier.prize }}</td>
         <td>{{ tier.number }}</td>
-        <td v-if="!state.raffle.has_raffled"><button class="button is-danger is-small">删除</button></td>
+        <td v-if="!state.raffle.has_raffled"><button class="button is-danger is-small" @click="deleteTier(tier.id)">删除</button></td>
       </tr>
     </tbody>
   </table>
