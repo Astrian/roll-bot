@@ -55,8 +55,13 @@ const addTier = async () => {
 }
 
 const removeTier = async (id: any) => {
-  await axios.delete(`${import.meta.env.VITE_ENDPOINT_DOMAIN}/raffle_pools/${props.id}/tiers/${id}`)
-  loadRuffle()
+  try{
+    await axios.delete(`${import.meta.env.VITE_ENDPOINT_DOMAIN}/raffle_pools/${props.id}/tiers/${id}`)
+  } catch(e) {
+    alert(`无法删除奖项：${e}`)
+  } finally {
+    loadRuffle()
+  }
 }
 
 </script>
