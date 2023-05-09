@@ -3,7 +3,6 @@
 /// <reference types="../../types/Tier.d.ts" />
 import { onMounted, reactive } from 'vue'
 import axios from 'axios'
-import QRCodeVue3 from 'qrcode-vue3'
 
 import Modal from './Modal.vue'
 
@@ -179,7 +178,7 @@ const clipboard = async () => {
       </ul>
       <div class="field is-grouped">
         <div class="control">
-          <button class="button is-primary" @click="state.showLink = true">分享中奖名单链接</button>
+          <button class="button is-primary" @click="clipboard()">分享中奖名单链接</button>
         </div>
         <div class="control">
           <button class="button" @click="state.showUsername = !state.showUsername">{{ state.showUsername ? '隐藏' : '显示'}}用户名</button>
@@ -258,20 +257,6 @@ const clipboard = async () => {
     </section>
     <footer class="modal-card-foot">
       <p>共 {{ state.raffle.participants_number }} 人</p>
-    </footer>
-  </Modal>
-
-  <Modal :show="state.showLink">
-    <header class="modal-card-head">
-      <p class="modal-card-title">中奖名单链接</p>
-      <button class="delete" aria-label="close" @click="state.showLink = false"></button>
-    </header>
-
-    <section class="modal-card-body">
-      <QRCodeVue3 :value="`${state.domain}/raffles/${state.raffle.raffle_poll_id}`" />
-    </section>
-    <footer class="modal-card-foot">
-      <button class="button is-primary" @click="clipboard">复制至剪贴板</button>
     </footer>
   </Modal>
 </template>
