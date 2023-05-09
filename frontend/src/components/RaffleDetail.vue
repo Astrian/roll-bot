@@ -20,7 +20,8 @@ const state = reactive({
   showParticipantModal: false,
   showLink: false,
   submittingNewTier: false,
-  domain: import.meta.env.VITE_DOMAIN
+  domain: import.meta.env.VITE_DOMAIN,
+  showUsername: false
 })
 
 onMounted(async () => {
@@ -172,13 +173,16 @@ const clipboard = async () => {
         <div v-for="(tier, _) in state.raffle.tiers" :key="tier.id">
           <li>{{ tier.name }}</li>
           <ul>
-            <li v-for="(winner, i) in tier.winners" :key="i">{{ winner.display_name }}</li>
+            <li v-for="(winner, i) in tier.winners" :key="i">{{ winner.display_name }} <span v-if="state.showUsername">@{{ winner.username }}</span></li>
           </ul>
         </div>
       </ul>
       <div class="field is-grouped">
         <div class="control">
           <button class="button is-primary" @click="state.showLink = true">分享中奖名单链接</button>
+        </div>
+        <div class="control">
+          <button class="button" @click="state.showUsername = !state.showUsername">{{ state.showUsername ? '隐藏' : '显示'}}用户名</button>
         </div>
       </div>
     </div>
