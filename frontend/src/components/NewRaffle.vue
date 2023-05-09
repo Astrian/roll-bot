@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, defineEmits } from 'vue'
 import axios from 'axios'
+
+const $emit = defineEmits(['newRaffle'])
 
 const state = reactive({
   form: {
     name: '',
-    csv: new File([], ''),
+    csv: new File([], '')
   },
   csv_filename: '',
   submitting: false,
@@ -48,7 +50,14 @@ const submit = async (event: Event) => {
     }
   })
 
-  console.log(res)
+  const { data } = res
+  const list = JSON.parse(localStorage.getItem('raffle_list') || '[]')
+  console.log(data)
+  list.push({ ...data, name })
+  localStorage.setItem('raffle_list', JSON.stringify(list))
+  localStorage.setItem('current_raffle', data.raffle_poll_id)
+
+  $emit('newRaffle')
 }
 </script>
 

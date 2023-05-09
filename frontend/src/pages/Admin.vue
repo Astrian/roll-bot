@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import RaffleSelector from '../components/RaffleSelector.vue'
-import NewRaffle from '../components/NewRaffle.vue';
+import NewRaffle from '../components/NewRaffle.vue'
+
+if (!localStorage.getItem('raffle_list')) {
+  localStorage.setItem('raffle_list', JSON.stringify([]))
+}
+
+const newRaffle = () => {
+  console.log('newRaffle')
+  console.log(localStorage.getItem('current_raffle'))
+}
 </script>
 
 <template>
@@ -8,7 +17,7 @@ import NewRaffle from '../components/NewRaffle.vue';
   <h1 class="title">抽奖 bot</h1>
   <RaffleSelector />
   <hr />
-  <NewRaffle />
+  <NewRaffle @new-raffle="newRaffle" />
 </div>
 </template>
 
