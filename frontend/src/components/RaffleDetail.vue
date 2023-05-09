@@ -15,6 +15,7 @@ const $props = defineProps({
 const state = reactive({
   raffle: {} as RafflePool,
   showNewTierModal: false,
+  showParticipantModal: false,
   submittingNewTier: false,
 })
 
@@ -53,7 +54,6 @@ const newTier = async (event: Event) => {
       break
     }
   }
-  console.log((event.target as HTMLFormElement)?.elements[2].value)
   try {
     await axios.post(`${import.meta.env.VITE_ENDPOINT_DOMAIN}/raffle_pools/${$props.current}/tiers`, {
       name: ((event.target as HTMLFormElement)?.elements[1] as any).value,
@@ -88,23 +88,34 @@ const newTier = async (event: Event) => {
       <button class="button is-link" @click="state.showNewTierModal = true">添加一个新奖项</button>
     </div>
   </div>
-  <h1 class="title is-4">参与者（{{state.raffle.participants_number}}）</h1>
   <table class="table">
     <thead>
       <tr>
-        <th>用户名</th>
-        <th>显示名</th>
-        <th>参与时间</th>
+        <th>奖项</th>
+        <th>奖品描述</th>
+        <th>获奖人数</th>
+        <th v-if="!state.raffle.has_raffled">操作</th>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="(participant, _) in state.raffle.participants" :key="participant.username">
-        <th>@{{ participant.username }}</th>
-        <td>{{ participant.display_name }}</td>
-        <td>{{ participant.time }}</td>
+      <tr v-for="(tier, _) in state.raffle.tiers" :key="tier.id">
+        <th>{{ tier.name }}</th>
+        <td>{{ tier.prize }}</td>
+        <td>{{ tier.number }}</td>
+        <td v-if="!state.raffle.has_raffled"><button class="button is-danger is-small">删除</button></td>
       </tr>
     </tbody>
   </table>
+  <h1 class="title is-4">操作</h1>
+  <div class="field is-grouped">
+    <div class="control">
+      <button class="button is-primary" @click="">进行抽奖</button>
+    </div>
+    <div class="control">
+      <button class="button" @click="state.showParticipantModal = true">查看参与者列表</button>
+    </div>
+  </div>
+  
   <Modal :show="state.showNewTierModal">
     <form @submit.prevent="newTier">
       <header class="modal-card-head">
@@ -137,6 +148,35 @@ const newTier = async (event: Event) => {
         <input type="submit" class="button is-success" value="添加" :disabled="state.submittingNewTier" />
       </footer>
     </form>
+  </Modal>
+
+  <Modal :show="state.showParticipantModal">
+    <header class="modal-card-head">
+      <p class="modal-card-title">参与者</p>
+      <button class="delete" aria-label="close" @click="state.showParticipantModal = false"></button>
+    </header>
+
+    <section class="modal-card-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>用户名</th>
+            <th>显示名</th>
+            <th>参与时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(participant, _) in state.raffle.participants" :key="participant.username">
+            <th>@{{ participant.username }}</th>
+            <td>{{ participant.display_name }}</td>
+            <td>{{ participant.time }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <footer class="modal-card-foot">
+      <p>共 {{ state.raffle.participants_number }} 人</p>
+    </footer>
   </Modal>
 </template>
 
